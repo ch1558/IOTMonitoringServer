@@ -33,8 +33,6 @@ def analyze_data():
                 'station__location__state__name',
                 'station__location__country__name')
     
-    print("data original" + str(aggregation.count()))
-    
     data_temp = Data.objects.filter(measurement__name="temperatura") \
         .select_related('station__user', 'station__location') \
         .select_related('station__location__city', 'station__location__state', 'station__location__country') \
@@ -45,9 +43,15 @@ def analyze_data():
                 'measurement__min_value',
                 'station__location__city__name',
                 'station__location__state__name',
-                'station__location__country__name')
-    print("poc_element")
-    print(data_temp.count())
+                'station__location__country__name').order_by('-base_time')[:4]
+    
+    for temp in data_temp:
+        print("$$$$$")
+        print(temp['avg_value'])
+        print(temp['station__user__username'])
+        print(temp['measurement__name'])
+        print(temp['station__location__city__name'])
+        print("$$$$$")
     
     alerts = 0
     for item in aggregation:
