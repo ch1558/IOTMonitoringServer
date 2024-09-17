@@ -64,6 +64,7 @@ def check_min_max_alert():
 
 def check_stable_temperature():
     # Fetch all stations
+    print("checking stable")
     stations = Data.objects.values_list('station', flat=True).distinct()
 
     stable_stations = []
