@@ -14,11 +14,10 @@ def analyze_data():
     # Consulta todos los datos de la última hora, los agrupa por estación y variable
     # Compara el promedio con los valores límite que están en la base de datos para esa variable.
     # Si el promedio se excede de los límites, se envia un mensaje de alerta.
-
     print("Calculando alertas...")
 
     check_min_max_alert()
-    check_stable_v2()
+    hottest_station()
 
 
 def check_min_max_alert():
@@ -61,7 +60,7 @@ def check_min_max_alert():
     print(len(aggregation), "dispositivos revisados")
     print(alerts, "alertas enviadas")
 
-def check_stable_v2():
+def hottest_station():
     print("init v2")
     aggregation = Data.objects.filter(measurement__name="temperatura") \
         .select_related('station__user', 'station__location') \
@@ -74,60 +73,20 @@ def check_stable_v2():
                 'station__location__city__name',
                 'station__location__state__name',
                 'station__location__country__name').order_by('avg_value')
-    for item in aggregation:
-        message = "{} || {} || {}".format(item['measurement__name'], item['avg_value'], item['station__user__username'])
-        print("$$$")
-        print(message)
-        print("%%%")
-
-    print("end v2")
-
-
-def check_stable_temperature():
-    # Fetch all stations
-    print("checking stable")
-    stations = Data.objects.values_list('station', flat=True).distinct()
-
-    stable_stations = []
-
-    for station in stations:
-
-        for clave, valor in station:
-            print(f'{clave}: {valor}')
     
-        # Get the last 4 temperature readings for this station
-        readings = Data.objects.filter(station=station, measurement__name='temperature') \
-                       .order_by('-base_time')[:4]
+    if len(aggregation) > 0: 
+        hottest = aggregation[-1]
 
-        # If we don't have exactly 4 readings, skip this station
-        if len(readings) < 4:
-            continue
+        country = hottest['station__location__country__name']
+        state = hottest['station__location__state__name']
+        city = hottest['station__location__city__name']
+        user = hottest['station__user__username']
 
-        # Extract the avg_value from each reading
-        temperatures = [reading.avg_value for reading in readings]
+        message = "HOTTEST STATION WITH {}".format(hottest['avg_value'])
+        topic = '{}/{}/{}/{}/in'.format(country, state, city, user)
+        print(datetime.now(), "Sending alert to {} {}".format(topic, 'hottest'))
+        client.publish(topic, message)
 
-        # Define what "alike" means, e.g., all temperatures within a range of 2 degrees
-        if max(temperatures) - min(temperatures) <= 2:  # You can adjust this range
-            stable_stations.append(station)
-
-            # Fetch station details for constructing the topic
-            station_details = readings[0].station
-            user = station_details.user.username
-            country = station_details.location.country.name
-            state = station_details.location.state.name
-            city = station_details.location.city.name
-
-            # Create the alert message
-            message = f"Temperature is stable for the last 4 readings: {temperatures}"
-
-            # Construct the MQTT topic
-            topic = f'{country}/{state}/{city}/{user}/stable_temperature'
-
-            # Publish the alert to the MQTT broker
-            client.publish(topic, message)
-            print(f"Alert sent to {topic}: {message}")
-
-    print(f"{len(stable_stations)} stations have stable temperatures.")
 
 def on_connect(client, userdata, flags, rc):
     '''
