@@ -75,8 +75,8 @@ def hottest_station():
                 'station__location__country__name').order_by('avg_value')
     
     if len(aggregation) > 0: 
-        hottest = aggregation[-1]
-
+        hottest = aggregation.last()
+        
         country = hottest['station__location__country__name']
         state = hottest['station__location__state__name']
         city = hottest['station__location__city__name']
