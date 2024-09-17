@@ -32,13 +32,13 @@ def analyze_data():
                 'station__location__city__name',
                 'station__location__state__name',
                 'station__location__country__name')
-    print("data original" + data.count())
+    print("data original" + str(data.count()))
     
     data_temp = Data.objects.filter(measurement__name="Temperatura") \
         .select_related('station__user', 'station__location') \
         .values('time', 'base_time', 'station_id', 'measurement_id', 'min_value', 'max_value', 'length', 'avg_value', 'times', 'values')
     print("poc_element")
-    print(data_temp.count())
+    print(str(data_temp.count()))
     
     alerts = 0
     for item in aggregation:
