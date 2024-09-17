@@ -69,7 +69,7 @@ def check_stable_v2():
         .select_related('station__user', 'station__location') \
         .select_related('station__location__city', 'station__location__state',
                         'station__location__country') \
-        .values('check_value', 'station__user__username',
+        .values('avg_value', 'station__user__username',
                 'measurement__name',
                 'measurement__max_value',
                 'measurement__min_value',
