@@ -64,8 +64,7 @@ def check_min_max_alert():
 def check_stable_v2():
     print("init v2")
     data = Data.objects.all()
-    aggregation = data.annotate(check_value=Avg('avg_value')) \
-        .values('check_value', 'station__user__username',
+    aggregation = data.values('check_value', 'station__user__username',
                 'measurement__name',
                 'measurement__max_value',
                 'measurement__min_value',
