@@ -64,14 +64,18 @@ def check_min_max_alert():
 def check_stable_v2():
     print("init v2")
     data = Data.objects.filter(measurement__name='temperatura')
-    aggregation = data.values('avg_value', "base_time"
-                'station__user__username',
-                'measurement__name',
-                'measurement__max_value',
-                'measurement__min_value',
-                'station__location__city__name',
-                'station__location__state__name',
-                'station__location__country__name').order_by('station__user__username') 
+    aggregation = data.select_related('station', 'measurement') \
+                .select_related('station__user', 'station__location') \
+                .select_related('station__location__city', 'station__location__state') \
+                .values('avg_value',
+                    'station__user__username',
+                    'measurement__name',
+                    'measurement__max_value',
+                    'measurement__min_value',
+                    'station__location__city__name',
+                    'station__location__state__name',
+                    'station__location__country__name') \
+                .order_by('station__user__username')
     
     for item in aggregation:
         message = "{} || {} || {}".format(item['measurement__name'], item['avg_value'], item['station__user__username'])
