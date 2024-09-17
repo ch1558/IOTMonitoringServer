@@ -75,7 +75,7 @@ def check_stable_v2():
                 'station__location__state__name',
                 'station__location__country__name').order_by('avg_value')
     for item in aggregation:
-        message = "{} || {} || {}".format(item['measurement__name'], item['check_value'], item['station__user__username'])
+        message = "{} || {} || {}".format(item['measurement__name'], item['avg_value'], item['station__user__username'])
         print("$$$")
         print(message)
         print("%%%")
