@@ -69,6 +69,10 @@ def check_stable_temperature():
     stable_stations = []
 
     for station in stations:
+
+        for clave, valor in station.items():
+            print(f'{clave}: {valor}')
+    
         # Get the last 4 temperature readings for this station
         readings = Data.objects.filter(station=station, measurement__name='temperature') \
                        .order_by('-base_time')[:4]
