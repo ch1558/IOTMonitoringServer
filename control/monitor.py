@@ -58,7 +58,7 @@ def analyze_data():
     print(alerts, "alertas enviadas")
 
 def analyze_data_v2():
-   # Consulta todos los datos de la última hora, los agrupa por estación y variable
+    # Consulta todos los datos de la última hora, los agrupa por estación y variable
     # Compara el promedio con los valores límite que están en la base de datos para esa variable.
     # Si el promedio se excede de los límites, se envia un mensaje de alerta.
 
@@ -66,9 +66,8 @@ def analyze_data_v2():
 
     data = Data.objects.filter(
         base_time__gte=datetime.now() - timedelta(hours=1))
-    aggregation = data.annotate(check_value=Avg('avg_value')) \
+    aggregation = data.annotate(avg_per_measurement=Avg('avg_value')) \
         .values('check_value','measurement__name') \
-        .annotate(avg_per_measurement=Avg('check_value')) \
         .select_related('station', 'measurement') \
         .select_related('station__user', 'station__location') \
         .select_related('station__location__city', 'station__location__state',
