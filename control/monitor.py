@@ -63,7 +63,7 @@ def check_min_max_alert():
 
 def check_stable_v2():
     print("init v2")
-    data = Data.objects.all()
+    data = Data.objects.filter(base_time__gte=datetime.now() - timedelta(hours=1))
     aggregation = data.values('avg_value', 
                 "base_time"
                 'station__user__username',
