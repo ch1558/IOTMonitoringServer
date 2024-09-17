@@ -17,6 +17,11 @@ def analyze_data():
 
     print("Calculando alertas...")
 
+    check_min_max_alert()
+    check_stable_temperature()
+
+
+def check_min_max_alert():
     data = Data.objects.filter(
         base_time__gte=datetime.now() - timedelta(hours=1))
     aggregation = data.annotate(check_value=Avg('avg_value')) \
@@ -24,36 +29,13 @@ def analyze_data():
         .select_related('station__user', 'station__location') \
         .select_related('station__location__city', 'station__location__state',
                         'station__location__country') \
-        .values('check_value', 
-                'station__user__username',
+        .values('check_value', 'station__user__username',
                 'measurement__name',
                 'measurement__max_value',
                 'measurement__min_value',
                 'station__location__city__name',
                 'station__location__state__name',
                 'station__location__country__name')
-    
-    data_temp = Data.objects.filter(measurement__name="temperatura") \
-        .select_related('station__user', 'station__location') \
-        .select_related('station__location__city', 'station__location__state', 'station__location__country') \
-        .values('avg_value', 
-                'station__user__username',
-                'measurement__name',
-                'measurement__max_value',
-                'measurement__min_value',
-                'station__location__city__name',
-                'station__location__state__name',
-                'station__location__country__name')
-
-    for temp in data_temp:
-        print("$$$$$")
-        print(temp['avg_value'])
-        print(temp['station__user__username'])
-        print(temp['measurement__name'])
-        print(temp['station__location__city__name'])
-        print("$$$$$")
-
-    
     alerts = 0
     for item in aggregation:
         alert = False
@@ -76,9 +58,50 @@ def analyze_data():
             print(datetime.now(), "Sending alert to {} {}".format(topic, variable))
             client.publish(topic, message)
             alerts += 1
-
     print(len(aggregation), "dispositivos revisados")
     print(alerts, "alertas enviadas")
+
+
+def check_stable_temperature():
+    # Fetch all stations
+    stations = Data.objects.values_list('station', flat=True).distinct()
+
+    stable_stations = []
+
+    for station in stations:
+        # Get the last 4 temperature readings for this station
+        readings = Data.objects.filter(station=station, measurement__name='temperature') \
+                       .order_by('-base_time')[:4]
+
+        # If we don't have exactly 4 readings, skip this station
+        if len(readings) < 4:
+            continue
+
+        # Extract the avg_value from each reading
+        temperatures = [reading.avg_value for reading in readings]
+
+        # Define what "alike" means, e.g., all temperatures within a range of 2 degrees
+        if max(temperatures) - min(temperatures) <= 2:  # You can adjust this range
+            stable_stations.append(station)
+
+            # Fetch station details for constructing the topic
+            station_details = readings[0].station
+            user = station_details.user.username
+            country = station_details.location.country.name
+            state = station_details.location.state.name
+            city = station_details.location.city.name
+
+            # Create the alert message
+            message = f"Temperature is stable for the last 4 readings: {temperatures}"
+
+            # Construct the MQTT topic
+            topic = f'{country}/{state}/{city}/{user}/stable_temperature'
+
+            # Publish the alert to the MQTT broker
+            client.publish(topic, message)
+            print(f"Alert sent to {topic}: {message}")
+
+    print(f"{len(stable_stations)} stations have stable temperatures.")
 
 def on_connect(client, userdata, flags, rc):
     '''
