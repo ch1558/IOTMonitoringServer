@@ -43,8 +43,8 @@ def analyze_data():
                 'measurement__min_value',
                 'station__location__city__name',
                 'station__location__state__name',
-                'station__location__country__name').order_by('-base_time')[:4]
-    
+                'station__location__country__name')
+
     for temp in data_temp:
         print("$$$$$")
         print(temp['avg_value'])
@@ -52,6 +52,7 @@ def analyze_data():
         print(temp['measurement__name'])
         print(temp['station__location__city__name'])
         print("$$$$$")
+
     
     alerts = 0
     for item in aggregation:
