@@ -18,7 +18,7 @@ def analyze_data():
     print("Calculando alertas...")
 
     check_min_max_alert()
-    check_stable_temperature()
+    check_stable_v2()
 
 
 def check_min_max_alert():
@@ -61,6 +61,28 @@ def check_min_max_alert():
     print(len(aggregation), "dispositivos revisados")
     print(alerts, "alertas enviadas")
 
+def check_stable_v2():
+    print("init v2")
+    data = Data.objects.filter(
+        base_time__gte=datetime.now() - timedelta(hours=1))
+    aggregation = data.annotate(check_value=Avg('avg_value')) \
+        .values('check_value', 'station__user__username',
+                'measurement__name',
+                'measurement__max_value',
+                'measurement__min_value',
+                'station__location__city__name',
+                'station__location__state__name',
+                'station__location__country__name')
+    
+    alerts = 0
+    for item in aggregation:
+        message = "{} || {} || {}".format(item['measurement__name'], item['check_value'], item['station__user__username'])
+        print("$$$")
+        print(message)
+        print("%%%")
+
+    print("end v2")
+
 
 def check_stable_temperature():
     # Fetch all stations
@@ -71,7 +93,7 @@ def check_stable_temperature():
 
     for station in stations:
 
-        for clave, valor in station.items():
+        for clave, valor in station:
             print(f'{clave}: {valor}')
     
         # Get the last 4 temperature readings for this station
