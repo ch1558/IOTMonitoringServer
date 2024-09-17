@@ -35,7 +35,7 @@ def analyze_data():
     
     data_temp = Data.objects.filter(measurement__name="Temperatura")
     print("poc_element")
-    print(data_temp)
+    print(data_temp.query)
     
     alerts = 0
     for item in aggregation:
