@@ -71,7 +71,7 @@ def check_stable_v2():
                 'measurement__min_value',
                 'station__location__city__name',
                 'station__location__state__name',
-                'station__location__country__name')
+                'station__location__country__name').order_by('station__user__username') 
     
     alerts = 0
     for item in aggregation:
