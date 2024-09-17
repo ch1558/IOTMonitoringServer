@@ -33,9 +33,10 @@ def analyze_data():
                 'station__location__state__name',
                 'station__location__country__name')
     
-    data_temp = Data.objects.filter(measurement__name="Temperatura")
+    data_temp = Data.objects.filter(measurement__name="Temperatura") \
+        .values('time', 'base_time', 'station_id', 'measurement_id', 'min_value', 'max_value', 'length', 'avg_value', 'times', 'values')
     print("poc_element")
-    print(data_temp.query)
+    print(data_temp)
     
     alerts = 0
     for item in aggregation:
