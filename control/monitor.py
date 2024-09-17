@@ -64,8 +64,7 @@ def check_min_max_alert():
 def check_stable_v2():
     print("init v2")
     data = Data.objects.filter(measurement__name='temperatura')
-    aggregation = data.select_related('station', 'measurement') \
-            .values('avg_value', 
+    aggregation = data.values('avg_value', 
                 'station__user__username',
                 'measurement__name',
                 'measurement__max_value',
