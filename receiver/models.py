@@ -69,7 +69,7 @@ class Station(models.Model):
     class Meta:
         unique_together = ("user", "location")
 
-    last_activity = models.DateTimeField(auto_now_add=True)
+    last_activity = models.DateTimeField(default=timezone.now)
     active = models.BooleanField(default=True)
 
     def str(self):
