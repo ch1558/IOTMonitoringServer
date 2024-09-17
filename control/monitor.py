@@ -37,7 +37,7 @@ def analyze_data():
         .select_related('station__user', 'station__location') \
         .values('time', 'base_time', 'station_id', 'measurement_id', 'min_value', 'max_value', 'length', 'avg_value', 'times', 'values')
     print("poc_element")
-    print(data_temp.query)
+    print(data_temp.count)
     
     alerts = 0
     for item in aggregation:
