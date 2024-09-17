@@ -21,7 +21,6 @@ def analyze_data():
         base_time__gte=datetime.now() - timedelta(hours=1))
     aggregation = data.annotate(check_value=Avg('avg_value')) \
         .select_related('station', 'measurement') \
-        .values('check_value','measurement__name').annotate(avg_per_measurement=Avg('check_value')).select_related('station', 'measurement') \
         .select_related('station__user', 'station__location') \
         .select_related('station__location__city', 'station__location__state',
                         'station__location__country') \
@@ -33,6 +32,11 @@ def analyze_data():
                 'station__location__city__name',
                 'station__location__state__name',
                 'station__location__country__name')
+    
+    data_temp = Data.objects.filter(measurement__name="Temperatura")
+    print("poc_element")
+    print(data_temp)
+    
     alerts = 0
     for item in aggregation:
         alert = False
